@@ -1,6 +1,6 @@
 package jk.codespace.restapi.service
 
-import jk.codespace.restapi.dto.Student
+import jk.codespace.restapi.dto.StudentDTO
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -8,20 +8,20 @@ import org.springframework.stereotype.Service
 class StudentService {
     private val log = KotlinLogging.logger {}
 
-    fun getStudent(studentId: String) : Student {
+    fun getStudent(studentId: String) : StudentDTO {
         log.info {"Attempting to get student :  $studentId" }
-        return Student(
+        return StudentDTO(
             studentId = studentId,
         firstName = "Joe",
         lastName = "Bloggs")
     }
 
-    fun createStudent(student: Student): Student {
+    fun createStudent(student: StudentDTO): StudentDTO {
         log.info { "Attempting to create Student with Id : ${student.studentId}" }
         return student
     }
 
-    fun updateStudent(student: Student): Student {
+    fun updateStudent(student: StudentDTO): StudentDTO {
         log.info { "Attempting to update Student with Id : ${student.studentId}" }
         return student
     }

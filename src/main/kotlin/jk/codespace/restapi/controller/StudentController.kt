@@ -1,6 +1,6 @@
 package jk.codespace.restapi.controller
 
-import jk.codespace.restapi.dto.Student
+import jk.codespace.restapi.dto.StudentDTO
 import jk.codespace.restapi.service.StudentService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,19 +12,19 @@ class StudentController(
 ) {
 
     @GetMapping("v1/students/{studentid}")
-    fun getStudentById(@PathVariable("studentid") studentId: String): ResponseEntity<Student> {
+    fun getStudentById(@PathVariable("studentid") studentId: String): ResponseEntity<StudentDTO> {
         val student = studentService.getStudent(studentId = studentId)
         return ResponseEntity(student, HttpStatus.OK)
     }
 
     @PostMapping("v1/students")
-    fun createStudent(@RequestBody student: Student): ResponseEntity<Student> {
+    fun createStudent(@RequestBody student: StudentDTO): ResponseEntity<StudentDTO> {
         val createdStudent = studentService.createStudent(student = student)
-        return ResponseEntity(createdStudent, HttpStatus.OK)
+        return ResponseEntity(createdStudent, HttpStatus.CREATED)
     }
 
     @PatchMapping("v1/students")
-    fun updateStudent(@RequestBody student: Student): ResponseEntity<Student> {
+    fun updateStudent(@RequestBody student: StudentDTO): ResponseEntity<StudentDTO> {
         val upatedStudent = studentService.updateStudent(student = student)
         return ResponseEntity(upatedStudent, HttpStatus.OK)
     }
