@@ -15,4 +15,10 @@ class StudentService {
         firstName = "Joe",
         lastName = "Bloggs")
     }
+
+    fun createStudent(student: Student): Student {
+        log.info { "Attempting to create Student with Id : ${student.studentId}" }
+        return student
+    }
+
 }
