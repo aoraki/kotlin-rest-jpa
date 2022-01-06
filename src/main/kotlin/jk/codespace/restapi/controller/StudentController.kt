@@ -23,4 +23,15 @@ class StudentController(
         return ResponseEntity(createdStudent, HttpStatus.OK)
     }
 
+    @PatchMapping("v1/students")
+    fun updateStudent(@RequestBody student: Student): ResponseEntity<Student> {
+        val upatedStudent = studentService.updateStudent(student = student)
+        return ResponseEntity(upatedStudent, HttpStatus.OK)
+    }
+
+    @DeleteMapping("v1/students/{studentid}")
+    fun deleteStudentById(@PathVariable("studentid") studentId: String): ResponseEntity<Boolean> {
+        val deleted = studentService.deleteStudent(studentId = studentId)
+        return ResponseEntity(deleted, HttpStatus.OK)
+    }
 }

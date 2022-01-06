@@ -11,4 +11,15 @@ Content-Type: application/json
 ### Get Student By studentId
 GET http://localhost:8080/v1/students/99
 
-###
+### Update an existing Student
+PATCH http://localhost:8080/v1/students
+Content-Type: application/json
+
+{
+  "studentId" : 1234,
+  "firstName" : "Peter",
+  "lastName" : "Panhandler"
+}
+
+### Delete Student By studentId
+DELETE http://localhost:8080/v1/students/99

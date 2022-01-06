@@ -21,4 +21,13 @@ class StudentService {
         return student
     }
 
+    fun updateStudent(student: Student): Student {
+        log.info { "Attempting to update Student with Id : ${student.studentId}" }
+        return student
+    }
+
+    fun deleteStudent(studentId: String): Boolean {
+        log.info { "Attempting to delete Student with Id : ${studentId}" }
+        return true
+    }
 }
