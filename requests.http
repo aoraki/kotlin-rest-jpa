@@ -1,0 +1,14 @@
+### Create a new Student
+POST http://localhost:8080/v1/students
+Content-Type: application/json
+
+{
+  "studentId" : 1234,
+  "firstName" : "Peter",
+  "lastName" : "Pan"
+}
+
+### Get Student By studentId
+GET http://localhost:8080/v1/students/99
+
+###
