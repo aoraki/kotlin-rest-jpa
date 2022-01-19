@@ -3,13 +3,13 @@ POST http://localhost:8080/v1/students
 Content-Type: application/json
 
 {
-  "studentId" : 1234,
+  "studentId" : 123456,
   "firstName" : "Peter",
   "lastName" : "Pan"
 }
 
 ### Get Student By studentId
-GET http://localhost:8080/v1/students/99
+GET http://localhost:8080/v1/students/123456
 
 ### Update an existing Student
 PATCH http://localhost:8080/v1/students
