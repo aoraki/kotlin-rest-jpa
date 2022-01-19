@@ -19,13 +19,19 @@ class StudentController(
 
     @PostMapping("v1/students")
     fun createStudent(@RequestBody student: StudentDTO): ResponseEntity<StudentDTO> {
-        val createdStudent = studentService.createStudent(student = student)
+        val createdStudent = studentService.createStudent(studentDTO = student)
         return ResponseEntity(createdStudent, HttpStatus.CREATED)
+    }
+
+    @GetMapping("v1/students")
+    fun getAllStudents(): ResponseEntity<List<StudentDTO>> {
+        val students = studentService.getAllStudents()
+        return ResponseEntity(students, HttpStatus.OK)
     }
 
     @PatchMapping("v1/students")
     fun updateStudent(@RequestBody student: StudentDTO): ResponseEntity<StudentDTO> {
-        val upatedStudent = studentService.updateStudent(student = student)
+        val upatedStudent = studentService.updateStudent(studentDTO = student)
         return ResponseEntity(upatedStudent, HttpStatus.OK)
     }
 
