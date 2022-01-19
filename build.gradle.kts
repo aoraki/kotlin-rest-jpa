@@ -27,10 +27,7 @@ dependencies {
 	// DB Related dependencies
 	runtimeOnly("com.h2database:h2")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
-	// Mapping DTOs to JPA Entities
-	implementation("org.modelmapper:modelmapper:2.4.5")
-
+	
 	// Logging
 	implementation("io.github.microutils:kotlin-logging:2.1.21")
 
