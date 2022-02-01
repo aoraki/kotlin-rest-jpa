@@ -27,9 +27,11 @@ dependencies {
 	// DB Related dependencies
 	runtimeOnly("com.h2database:h2")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	
+
 	// Logging
 	implementation("io.github.microutils:kotlin-logging:2.1.21")
+	implementation("io.mockk:mockk:1.10.2")
+	implementation("org.assertj:assertj-core:3.18.1")
 
 	// Testing dependencies
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
