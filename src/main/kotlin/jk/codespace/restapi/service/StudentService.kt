@@ -45,11 +45,7 @@ class StudentService(
 
     fun updateStudent(studentDTO: StudentDTO): StudentDTO {
         log.info { "Attempting to update Student with Id : ${studentDTO.studentId}" }
-        val student: Student? = studentRepository.findByStudentId(studentDTO.studentId)
-
-        if(student == null){
-            throw AppException(statusCode = 404, reason = "A student with student code: ${studentDTO.studentId} does not exist.  Cannot update")
-        }
+        val student: Student = studentRepository.findByStudentId(studentDTO.studentId) ?: throw AppException(statusCode = 404, reason = "A student with student code: ${studentDTO.studentId} does not exist.  Cannot update")
 
         val updatedStudent: Student = conversion.convertStudentDTOToStudentWithDatabaseId(studentDTO, student.id)
         val retStudent: Student = studentRepository.save(updatedStudent)
@@ -59,10 +55,7 @@ class StudentService(
     fun deleteStudent(studentId: String): Boolean {
         log.info { "Attempting to delete Student with Id : ${studentId}" }
 
-        val student: Student? = studentRepository.findByStudentId(studentId)
-        if(student == null){
-            throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot delete")
-        }
+        val student: Student = studentRepository.findByStudentId(studentId)  ?: throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot delete")
 
         try {
             studentRepository.delete(student)
