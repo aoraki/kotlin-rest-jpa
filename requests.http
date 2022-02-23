@@ -4,22 +4,66 @@ Content-Type: application/json
 
 {
   "studentId" : 123456,
-  "firstName" : "Peter",
+  "firstName" : "Percy",
   "lastName" : "Pan"
 }
 
+### Get All Students
+GET http://localhost:8080/v1/students
+Content-Type: application/json
+
 ### Get Student By studentId
 GET http://localhost:8080/v1/students/123456
+Content-Type: application/json
 
 ### Update an existing Student
 PATCH http://localhost:8080/v1/students
 Content-Type: application/json
 
 {
-  "studentId" : 1234,
-  "firstName" : "Peter",
-  "lastName" : "Panhandler"
+  "studentId" : 12345,
+  "firstName" : "Perciful",
+  "lastName" : "Pan"
 }
 
 ### Delete Student By studentId
-DELETE http://localhost:8080/v1/students/99
+DELETE http://localhost:8080/v1/students/12345
+
+### Create a new Course
+POST http://localhost:8080/v1/courses
+Content-Type: application/json
+
+{
+  "courseCode" : "BSC-123",
+  "courseName" : "Degree Computer Science",
+  "courseDescription" : "A multi-moduled course aimed at preparing students for a career in IT/Software Development"
+}
+
+### Get All Courses
+GET http://localhost:8080/v1/courses
+Content-Type: application/json
+
+### Get Course By courseCode
+GET http://localhost:8080/v1/courses/BSC-123
+Content-Type: application/json
+
+### Get Course By courseCode V2
+GET http://localhost:8080/v2/courses/BSC-123
+Content-Type: application/json
+
+### Update an existing Course
+PATCH http://localhost:8080/v1/courses
+Content-Type: application/json
+
+{
+  "courseCode" : "BSC-123",
+  "courseName" : "Bachelors in Computer Science",
+  "courseDescription" : "A multi-moduled course aimed at preparing students for a career in IT/Software Development"
+}
+
+### Delete Course By courseCode
+DELETE http://localhost:8080/v1/courses/BSC-456
+
+### Enroll student in course
+POST http://localhost:8080/v1/students/123456/courses/BSC-456
+Content-Type: application/json
