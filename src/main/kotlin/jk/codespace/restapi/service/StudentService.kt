@@ -1,8 +1,10 @@
 package jk.codespace.restapi.service
 
 import jk.codespace.restapi.dto.StudentDTO
+import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
+import jk.codespace.restapi.repository.CourseRepository
 import jk.codespace.restapi.repository.StudentRepository
 import jk.codespace.restapi.utils.Conversion
 import mu.KotlinLogging
@@ -10,7 +12,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class StudentService(
-    private val studentRepository: StudentRepository) {
+    private val studentRepository: StudentRepository,
+    private val courseRepository: CourseRepository) {
 
     private val log = KotlinLogging.logger {}
     private val conversion = Conversion()
@@ -56,6 +59,13 @@ class StudentService(
         log.info { "Attempting to delete Student with Id : ${studentId}" }
 
         val student: Student = studentRepository.findByStudentId(studentId)  ?: throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot delete")
+        val courses: Set<Course> = student.courses
+
+        // Ensure courses that the student is currently enrolled in are disassociated from the student
+        for(course in courses){
+            course.removeStudent(student)
+            courseRepository.save(course)
+        }
 
         try {
             studentRepository.delete(student)
@@ -64,4 +74,39 @@ class StudentService(
         }
         return true
     }
+
+    fun enrollStudent(studentId: String, courseCode: String): StudentDTO {
+        log.info { "Attempting to enroll Student with Id : ${studentId} in course with code : ${courseCode}"}
+
+        val student: Student = studentRepository.findByStudentId(studentId)  ?: throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot complete enrolment")
+        val course: Course = courseRepository.findByCourseCode(courseCode)  ?: throw AppException(statusCode = 404, reason = "A course with  code: $courseCode does not exist.  Cannot complete enrolment")
+
+        student.addCourse(course)
+
+        //val courseSet = student.courses.toMutableSet()
+        //courseSet.add(course)
+
+        //val updatedStudent = Student(id=student.id, studentId = student.studentId, firstName = student.firstName, lastName = student.lastName, courses = courseSet)
+        val retStudent: Student = studentRepository.save(student)
+        return conversion.convertStudentToDTO(retStudent)
+    }
+
+    fun unenrollStudent(studentId: String, courseCode: String): StudentDTO {
+        log.info { "Attempting to unenroll Student with Id : ${studentId} in course with code : ${courseCode}"}
+
+        val student: Student = studentRepository.findByStudentId(studentId)  ?: throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot complete unenrolment")
+        val course: Course = courseRepository.findByCourseCode(courseCode)  ?: throw AppException(statusCode = 404, reason = "A course with  code: $courseCode does not exist.  Cannot complete unenrolment")
+
+        student.removeCourse(course)
+
+        //val courseSet = student.courses.toMutableSet()
+        //courseSet.add(course)
+
+        //val updatedStudent = Student(id=student.id, studentId = student.studentId, firstName = student.firstName, lastName = student.lastName, courses = courseSet)
+        val retStudent: Student = studentRepository.save(student)
+        return conversion.convertStudentToDTO(retStudent)
+    }
+
+
+
 }
