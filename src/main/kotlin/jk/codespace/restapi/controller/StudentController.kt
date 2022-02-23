@@ -40,4 +40,12 @@ class StudentController(
         val deleted = studentService.deleteStudent(studentId = studentId)
         return ResponseEntity(deleted, HttpStatus.OK)
     }
+
+    @PostMapping("v1/students/{studentid}/courses/{coursecode}")
+    fun enrollStudentInCourse(@PathVariable("studentid") studentId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<StudentDTO> {
+        val student = studentService.enrollStudent(studentId = studentId, courseCode = courseCode)
+        return ResponseEntity(student, HttpStatus.OK)
+    }
+
+
 }
