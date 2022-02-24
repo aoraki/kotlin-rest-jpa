@@ -2,14 +2,13 @@ package jk.codespace.restapi.service
 
 import io.mockk.every
 import io.mockk.mockk
-import jk.codespace.restapi.dto.StudentDTO
 import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
+import jk.codespace.restapi.repository.CourseRepository
 import jk.codespace.restapi.repository.StudentRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.http.HttpStatus
 
 class StudentServiceTest {
@@ -17,8 +16,12 @@ class StudentServiceTest {
     // Mock out the Student Repository
     private val studentRepository = mockk<StudentRepository>()
 
+    // Mock out the Course Repository
+    private val courseRepository = mockk<CourseRepository>()
+
+
     // Create instance of class under test
-    private val studentService = StudentService(studentRepository = studentRepository)
+    private val studentService = StudentService(studentRepository = studentRepository, courseRepository = courseRepository)
 
     @Test
     fun getStudentSuccess() {
@@ -37,7 +40,7 @@ class StudentServiceTest {
 
     @Test
     fun getAllStudentsSuccess() {
-        every {studentRepository.findAll()} returns arrayListOf(Student(12345,"123", "Jay", "Parker"),Student(67891,"456", "Pamela", "Jones"))
+        every {studentRepository.findAll()} returns arrayListOf(Student(12345,studentId = "123", firstName = "Jay", lastName = "Parker"),Student(67891,studentId = "456", firstName = "Pamela", lastName = "Jones"))
 
         val response = studentService.getAllStudents()
 
@@ -63,12 +66,12 @@ class StudentServiceTest {
 
     @Test
     fun createStudentSuccess() {
-        val student = Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jim", lastName = "Hughes")
-        every {studentRepository.save(any())} returns student
-        every {studentRepository.findByStudentId(studentDTO.studentId)} returns null
+        val persistedStudent = Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        val inputStudent = Student(studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        every {studentRepository.save(any())} returns persistedStudent
+        every {studentRepository.findByStudentId(inputStudent.studentId)} returns null
 
-        val response = studentService.createStudent(studentDTO)
+        val response = studentService.createStudent(inputStudent)
         assertThat(response.studentId).isEqualTo("1234")
         assertThat(response.firstName).isEqualTo("Jim")
         assertThat(response.lastName).isEqualTo("Hughes")
@@ -76,12 +79,12 @@ class StudentServiceTest {
 
     @Test
     fun createStudentAlreadyFound() {
-        val student = Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jim", lastName = "Hughes")
-        every {studentRepository.findByStudentId(studentDTO.studentId)} returns student
+        val existingStudent = Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        val inputStudent = Student(studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        every {studentRepository.findByStudentId(inputStudent.studentId)} returns existingStudent
 
         val exception = Assertions.assertThrows(AppException::class.java) {
-            studentService.createStudent(studentDTO)
+            studentService.createStudent(inputStudent)
         }
         assertThat(exception.errorMessage).isEqualTo("A student with student code: 1234 already exists")
         assertThat(exception.httpStatus).isEqualTo(HttpStatus.CONFLICT)
@@ -89,11 +92,11 @@ class StudentServiceTest {
 
     @Test
     fun updateStudentSuccess() {
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val student = Student(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
         every {studentRepository.save(any())} returns Student(id = 123456, studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
-        every {studentRepository.findByStudentId(studentDTO.studentId)} returns Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        every {studentRepository.findByStudentId(student.studentId)} returns Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
 
-        val response = studentService.updateStudent(studentDTO)
+        val response = studentService.updateStudent(student)
         assertThat(response.studentId).isEqualTo("1234")
         assertThat(response.firstName).isEqualTo("Jimmy")
         assertThat(response.lastName).isEqualTo("Hughes")
@@ -101,12 +104,12 @@ class StudentServiceTest {
 
     @Test
     fun updateStudentNotFound() {
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val student = Student(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
 
-        every {studentRepository.findByStudentId(studentDTO.studentId)} throws AppException(statusCode = 404, reason = "A student with student code: 1234 does not exist. Cannot update")
+        every {studentRepository.findByStudentId(student.studentId)} throws AppException(statusCode = 404, reason = "A student with student code: 1234 does not exist. Cannot update")
 
         val exception = Assertions.assertThrows(AppException::class.java) {
-            studentService.updateStudent(studentDTO)
+            studentService.updateStudent(student)
         }
         assertThat(exception.errorMessage).isEqualTo("A student with student code: 1234 does not exist. Cannot update")
         assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
@@ -114,19 +117,19 @@ class StudentServiceTest {
 
     @Test
     fun deleteStudentSuccess() {
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
-        every {studentRepository.findByStudentId(studentDTO.studentId)} returns Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        val student = Student(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        every {studentRepository.findByStudentId(student.studentId)} returns Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
         every {studentRepository.delete(any())} returns Unit
-        val response = studentService.deleteStudent(studentDTO.studentId)
-        assertThat(response).isTrue()
+        val response = studentService.deleteStudent(student.studentId)
+        assertThat(response).isTrue
     }
 
     @Test
     fun deleteStudentNotFound() {
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
-        every {studentRepository.findByStudentId(studentDTO.studentId)} throws AppException(statusCode = 404, reason = "A student with student code: 1234 does not exist. Cannot delete")
+        val student = Student(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        every {studentRepository.findByStudentId(student.studentId)} throws AppException(statusCode = 404, reason = "A student with student code: 1234 does not exist. Cannot delete")
         val exception = Assertions.assertThrows(AppException::class.java) {
-            studentService.deleteStudent(studentDTO.studentId)
+            studentService.deleteStudent(student.studentId)
         }
         assertThat(exception.errorMessage).isEqualTo("A student with student code: 1234 does not exist. Cannot delete")
         assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
@@ -134,12 +137,12 @@ class StudentServiceTest {
 
     @Test
     fun deleteStudentUnexpectedError() {
-        val studentDTO = StudentDTO(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
-        every {studentRepository.findByStudentId(studentDTO.studentId)} returns Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
+        val student = Student(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        every {studentRepository.findByStudentId(student.studentId)} returns Student(id = 123456, studentId = "1234", firstName = "Jim", lastName = "Hughes")
         every {studentRepository.delete(any())} throws Exception("DB Does not exist")
 
         val exception = Assertions.assertThrows(AppException::class.java) {
-            studentService.deleteStudent(studentDTO.studentId)
+            studentService.deleteStudent(student.studentId)
         }
         assertThat(exception.errorMessage).isEqualTo("Unexpected error encountered deleting student with student id 1234")
         assertThat(exception.httpStatus).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)

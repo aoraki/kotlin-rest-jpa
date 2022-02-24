@@ -1,6 +1,5 @@
 package jk.codespace.restapi.controller
 
-import jk.codespace.restapi.dto.CourseDTO
 import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.service.CourseService
 import org.springframework.http.HttpStatus
@@ -12,33 +11,26 @@ class CourseController(
     private val courseService: CourseService
 ) {
     @GetMapping("v1/courses/{coursecode}")
-    fun getCourseByCode(@PathVariable("coursecode") courseCode: String): ResponseEntity<CourseDTO> {
+    fun getCourseByCode(@PathVariable("coursecode") courseCode: String): ResponseEntity<Course> {
         val course = courseService.getCourse(courseCode = courseCode)
         return ResponseEntity(course, HttpStatus.OK)
     }
 
-    @GetMapping("v2/courses/{coursecode}")
-    fun getCourseByCodeV2(@PathVariable("coursecode") courseCode: String): ResponseEntity<Course> {
-        val course = courseService.getCourseNew(courseCode = courseCode)
-        return ResponseEntity(course, HttpStatus.OK)
-    }
-
-
     @PostMapping("v1/courses")
-    fun createcourse(@RequestBody course: CourseDTO): ResponseEntity<CourseDTO> {
-        val createdCourse = courseService.createCourse(courseDTO = course)
+    fun createcourse(@RequestBody course: Course): ResponseEntity<Course> {
+        val createdCourse = courseService.createCourse(course = course)
         return ResponseEntity(createdCourse, HttpStatus.CREATED)
     }
 
     @GetMapping("v1/courses")
-    fun getAllcourses(): ResponseEntity<List<CourseDTO>> {
+    fun getAllcourses(): ResponseEntity<List<Course>> {
         val courses = courseService.getAllCourses()
         return ResponseEntity(courses, HttpStatus.OK)
     }
 
     @PatchMapping("v1/courses")
-    fun updatecourse(@RequestBody course: CourseDTO): ResponseEntity<CourseDTO> {
-        val upatedCourse = courseService.updateCourse(courseDTO = course)
+    fun updatecourse(@RequestBody course: Course): ResponseEntity<Course> {
+        val upatedCourse = courseService.updateCourse(course = course)
         return ResponseEntity(upatedCourse, HttpStatus.OK)
     }
 

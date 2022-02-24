@@ -1,13 +1,13 @@
 package jk.codespace.restapi.controller
 
-import jk.codespace.restapi.dto.StudentDTO
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
+import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.service.StudentService
 import org.junit.jupiter.api.Test
-import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @WebMvcTest(StudentController::class)
 class StudentControllerTest {
 
-    @MockBean
+    @MockkBean
     private lateinit var studentService: StudentService
 
     @Autowired
@@ -38,7 +38,7 @@ class StudentControllerTest {
 
     @Test
     fun getAllStudentsEmptyList200Response() {
-        given(studentService.getAllStudents()).willReturn(emptyList())
+        every { studentService.getAllStudents() } returns emptyList()
 
         mvc.perform(get("/v1/students"))
             .andExpect(status().isOk)
@@ -48,7 +48,7 @@ class StudentControllerTest {
 
     @Test
     fun getAllStudents200ResponseOneStudent() {
-        given(studentService.getAllStudents()).willReturn(arrayListOf(generateStudentDTO("123", "Pete", "Parker")))
+        every { studentService.getAllStudents()} returns arrayListOf(generateStudent("123", "Pete", "Parker"))
 
         mvc.perform(get("/v1/students"))
             .andExpect(status().isOk)
@@ -61,7 +61,7 @@ class StudentControllerTest {
 
     @Test
     fun getAllStudents200ResponseMultipleStudents() {
-        given(studentService.getAllStudents()).willReturn(arrayListOf(generateStudentDTO("111", "Tom", "Thumb"), generateStudentDTO("222", "Peter", "Pan")))
+        every { studentService.getAllStudents() } returns arrayListOf(generateStudent("111", "Tom", "Thumb"), generateStudent("222", "Peter", "Pan"))
 
         mvc.perform(get("/v1/students")
             .accept(MediaType.APPLICATION_JSON))
@@ -78,6 +78,7 @@ class StudentControllerTest {
 
     @Test
     fun getAllStudents406Response(){
+        every { studentService.getAllStudents() } returns emptyList()
         mvc.perform(get("/v1/students")
             .accept(MediaType.APPLICATION_XML_VALUE))
             .andExpect(status().isNotAcceptable)
@@ -91,7 +92,7 @@ class StudentControllerTest {
 
     @Test
     fun getStudentByStudentIdSuccessfulResponse(){
-        given(studentService.getStudent("123")).willReturn(generateStudentDTO("123", "Sam", "Tracey"))
+        every { studentService.getStudent("123") } returns generateStudent("123", "Sam", "Tracey")
 
         mvc.perform(get("/v1/students/{id}", "123"))
             .andExpect(status().isOk)
@@ -103,7 +104,7 @@ class StudentControllerTest {
 
     @Test
     fun getStudentByStudentIdNotFound(){
-        given(studentService.getStudent("123")).willThrow(AppException(statusCode = 404, reason = "Cannot find student with id 123"))
+        every { studentService.getStudent("123") } throws AppException(statusCode = 404, reason = "Cannot find student with id 123")
 
         mvc.perform(get("/v1/students/{id}", "123"))
             .andExpect(status().isNotFound)
@@ -111,7 +112,7 @@ class StudentControllerTest {
 
     @Test
     fun createStudentSuccessful201Response(){
-        given(studentService.createStudent(StudentDTO("2222", "Peter", "Pan"))).willReturn(generateStudentDTO("2222", "Peter", "Pan"))
+        every {studentService.createStudent(any())} returns generateStudent("2222", "Peter", "Pan")
 
         val payload = """
                 {
@@ -127,14 +128,14 @@ class StudentControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
             .andExpect(status().isCreated)
-            .andExpect(jsonPath("studentId").value("2222"))
-            .andExpect(jsonPath("firstName").value("Peter"))
-            .andExpect(jsonPath("lastName").value("Pan"))
+            .andExpect(jsonPath("$.studentId").value("2222"))
+            .andExpect(jsonPath("$.firstName").value("Peter"))
+            .andExpect(jsonPath("$.lastName").value("Pan"))
     }
 
     @Test
     fun createStudent409Conflict(){
-        given(studentService.createStudent(StudentDTO("2222", "Peter", "Pan"))).willThrow(AppException(statusCode = 409, reason = "A student with student code: 2222 already exists"))
+        every { studentService.createStudent(any()) } throws AppException(statusCode = 409, reason = "A student with student code: 2222 already exists")
 
         val payload = """
                 {
@@ -172,7 +173,7 @@ class StudentControllerTest {
 
     @Test
     fun updateStudentSuccessful200Response(){
-        given(studentService.updateStudent(StudentDTO("2222", "Peter", "Pan"))).willReturn(generateStudentDTO("2222", "Peter", "Pan"))
+        every { studentService.updateStudent(any()) } returns generateStudent("2222", "Peter", "Pan")
 
         val payload = """
                 {
@@ -195,7 +196,7 @@ class StudentControllerTest {
 
     @Test
     fun updateStudentNotFoundResponse(){
-        given(studentService.updateStudent(StudentDTO("2222", "Peter", "Pan"))).willThrow(AppException(statusCode = 404, reason = "Cannot find student with id 2222"))
+        every {studentService.updateStudent(any())} throws AppException(statusCode = 404, reason = "Cannot find student with id 2222")
 
         val payload = """
                 {
@@ -233,20 +234,20 @@ class StudentControllerTest {
 
     @Test
     fun deleteStudentSuccessfulResponse(){
-        given(studentService.deleteStudent("123")).willReturn(true)
+        every { studentService.deleteStudent("123") } returns true
         mvc.perform(delete("/v1/students/{id}", "123"))
             .andExpect(status().isOk)
     }
 
     @Test
     fun deleteStudentNotFoundResponse(){
-        given(studentService.deleteStudent("123")).willThrow(AppException(statusCode = 404, reason = "Cannot find student with id 123"))
+        every {studentService.deleteStudent("123")} throws AppException(statusCode = 404, reason = "Cannot find student with id 123")
         mvc.perform(delete("/v1/students/{id}", "123"))
             .andExpect(status().isNotFound)
     }
 
 
-    fun generateStudentDTO(studentId: String, firstName: String, lastName: String) : StudentDTO{
-        return StudentDTO(studentId = studentId, firstName = firstName, lastName = lastName)
+    fun generateStudent(studentId: String, firstName: String, lastName: String) : Student{
+        return Student(studentId = studentId, firstName = firstName, lastName = lastName)
     }
 }

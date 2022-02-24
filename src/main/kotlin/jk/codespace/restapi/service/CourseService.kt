@@ -1,12 +1,10 @@
 package jk.codespace.restapi.service
 
-import jk.codespace.restapi.dto.CourseDTO
 import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.repository.CourseRepository
 import jk.codespace.restapi.repository.StudentRepository
-import jk.codespace.restapi.utils.Conversion
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -16,48 +14,36 @@ class CourseService(
     private val studentRepository: StudentRepository
 ) {
     private val log = KotlinLogging.logger {}
-    private val conversion = Conversion()
 
-    fun getCourse(courseCode: String?): CourseDTO? {
-        val course: Course? = courseRepository.findByCourseCode(courseCode!!)
-        if(course != null) return conversion.convertCourseToDTO(courseRepository.findByCourseCode(courseCode!!)!!) else throw AppException(statusCode = 404, reason = "Cannot find Course with code $courseCode")
-    }
-
-    fun getCourseNew(courseCode: String?): Course? {
+    fun getCourse(courseCode: String?): Course? {
         val course: Course? = courseRepository.findByCourseCode(courseCode!!)
         if(course != null) return course else throw AppException(statusCode = 404, reason = "Cannot find Course with code $courseCode")
     }
 
-    fun getAllCourses(): List<CourseDTO> {
+    fun getAllCourses(): List<Course> {
         log.info { "Attempting to get all Courses" }
         val courses = courseRepository.findAll() as List<Course>
-        val courseDTOs = ArrayList<CourseDTO>()
-        for(course in courses){
-            courseDTOs.add(conversion.convertCourseToDTO(course))
-        }
-        return courseDTOs
+        return courses
     }
 
-    fun createCourse(courseDTO: CourseDTO): CourseDTO {
-        log.info { "Attempting to create Course with Code : ${courseDTO.courseCode}" }
+    fun createCourse(course: Course): Course {
+        log.info { "Attempting to create Course with Code : ${course.courseCode}" }
 
-        val checkCourse: Course? = courseRepository.findByCourseCode(courseDTO.courseCode)
+        val checkCourse: Course? = courseRepository.findByCourseCode(course.courseCode)
         if(checkCourse != null){
-            throw AppException(statusCode = 409, reason = "A Course with Course code: ${courseDTO.courseCode} already exists")
+            throw AppException(statusCode = 409, reason = "A Course with Course code: ${course.courseCode} already exists")
         }
 
-        val course: Course = conversion.convertCourseDTOToCourse(courseDTO)
         val retCourse: Course = courseRepository.save(course)
-        return conversion.convertCourseToDTO(retCourse)
+        return retCourse
     }
 
-    fun updateCourse(courseDTO: CourseDTO): CourseDTO {
-        log.info { "Attempting to update Course with code : ${courseDTO.courseCode}" }
-        val course: Course = courseRepository.findByCourseCode(courseDTO.courseCode) ?: throw AppException(statusCode = 404, reason = "A Course with Course code: ${courseDTO.courseCode} does not exist.  Cannot update")
-
-        val updatedCourse: Course = conversion.convertCourseDTOToCourseWithDatabaseId(courseDTO, course.id)
-        val retCourse: Course = courseRepository.save(updatedCourse)
-        return conversion.convertCourseToDTO(retCourse)
+    fun updateCourse(course: Course): Course {
+        log.info { "Attempting to update Course with code : ${course.courseCode}" }
+        val existingCourse: Course = courseRepository.findByCourseCode(course.courseCode) ?: throw AppException(statusCode = 404, reason = "A Course with Course code: ${course.courseCode} does not exist.  Cannot update")
+        course.id = existingCourse.id
+        val retCourse: Course = courseRepository.save(course)
+        return retCourse
     }
 
     fun deleteCourse(courseCode: String): Boolean {
