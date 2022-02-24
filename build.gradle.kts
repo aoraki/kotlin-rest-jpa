@@ -30,11 +30,14 @@ dependencies {
 
 	// Logging
 	implementation("io.github.microutils:kotlin-logging:2.1.21")
-	implementation("io.mockk:mockk:1.10.2")
-	implementation("org.assertj:assertj-core:3.18.1")
 
 	// Testing dependencies
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test") {
+		exclude(module = "mockito-core")
+	}
+	testImplementation("io.mockk:mockk:1.10.2")
+	testImplementation("org.assertj:assertj-core:3.18.1")
+	testImplementation("com.ninja-squad:springmockk:3.1.0")
 }
 
 tasks.withType<KotlinCompile> {
@@ -47,3 +50,4 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
