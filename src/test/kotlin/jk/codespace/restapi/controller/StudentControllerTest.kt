@@ -2,6 +2,7 @@ package jk.codespace.restapi.controller
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.service.StudentService
@@ -246,8 +247,108 @@ class StudentControllerTest {
             .andExpect(status().isNotFound)
     }
 
+    @Test
+    fun enrollStudentInCourse200Response(){
+        val student: Student = generateStudent("2222", "Peter", "Pan")
+        val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
+        student.addCourse(course)
+
+        every {studentService.enrollStudent(studentId = student.studentId, courseCode = course.courseCode)} returns student
+
+        mvc.perform(
+            post("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.studentId").value("2222"))
+            .andExpect(jsonPath("$.firstName").value("Peter"))
+            .andExpect(jsonPath("$.lastName").value("Pan"))
+            .andExpect(jsonPath("$.courses.[0].courseCode").value("3333"))
+            .andExpect(jsonPath("$.courses.[0].courseName").value("IT"))
+            .andExpect(jsonPath("$.courses.[0].courseDescription").value("Degree in IT"))
+    }
+
+    @Test
+    fun enrollStudentInCourse405Response(){
+        mvc.perform(
+            put("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isMethodNotAllowed)
+    }
+
+
+    @Test
+    fun enrollStudentInCourseStudentNotFound(){
+        every {studentService.enrollStudent(studentId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A student with student code: 2222 does not exist.  Cannot complete enrolment")
+
+        mvc.perform(
+            post("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun enrollStudentInCourseCourseNotFound(){
+        every {studentService.enrollStudent(studentId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A course with  code: 3333 does not exist.  Cannot complete enrolment")
+        mvc.perform(
+            post("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun unenrollStudentInCourse200Response(){
+        val student: Student = generateStudent("2222", "Peter", "Pan")
+        val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
+        student.addCourse(course)
+
+        every {studentService.unenrollStudent(studentId = student.studentId, courseCode = course.courseCode)} returns student
+
+        mvc.perform(
+            delete("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.studentId").value("2222"))
+            .andExpect(jsonPath("$.firstName").value("Peter"))
+            .andExpect(jsonPath("$.lastName").value("Pan"))
+            .andExpect(jsonPath("$.courses.[0].courseCode").value("3333"))
+            .andExpect(jsonPath("$.courses.[0].courseName").value("IT"))
+            .andExpect(jsonPath("$.courses.[0].courseDescription").value("Degree in IT"))
+    }
+
+    @Test
+    fun unenrollStudentInCourseStudentNotFound(){
+        every {studentService.unenrollStudent(studentId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A student with student code: 2222 does not exist.  Cannot complete enrolment")
+
+        mvc.perform(
+            delete("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun unenrollStudentInCourseCourseNotFound(){
+        every {studentService.unenrollStudent(studentId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A course with  code: 3333 does not exist.  Cannot complete enrolment")
+        mvc.perform(
+            delete("/v1/students/{studentid}/courses/{coursecode}", "2222", "3333")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound)
+    }
+
+
 
     fun generateStudent(studentId: String, firstName: String, lastName: String) : Student{
         return Student(studentId = studentId, firstName = firstName, lastName = lastName)
     }
+
+    fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : Course {
+        return Course(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
+    }
+
 }
