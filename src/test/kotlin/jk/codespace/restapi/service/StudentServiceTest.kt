@@ -19,7 +19,6 @@ class StudentServiceTest {
     // Mock out the Course Repository
     private val courseRepository = mockk<CourseRepository>()
 
-
     // Create instance of class under test
     private val studentService = StudentService(studentRepository = studentRepository, courseRepository = courseRepository)
 
@@ -36,6 +35,18 @@ class StudentServiceTest {
         assertThat(response?.studentId).isEqualTo("12345")
         assertThat(response?.firstName).isEqualTo("Jim")
         assertThat(response?.lastName).isEqualTo("Hughes")
+    }
+
+    @Test
+    fun getStudentNotFound() {
+        val studentId = "12345"
+        every {studentRepository.findByStudentId(studentId)} throws AppException(statusCode = 404, reason = "Cannot find student with id 1234")
+
+        val exception = Assertions.assertThrows(AppException::class.java) {
+            studentService.getStudent(studentId)
+        }
+        assertThat(exception.errorMessage).isEqualTo("Cannot find student with id 1234")
+        assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
     }
 
     @Test
@@ -106,12 +117,12 @@ class StudentServiceTest {
     fun updateStudentNotFound() {
         val student = Student(studentId = "1234", firstName = "Jimmy", lastName = "Hughes")
 
-        every {studentRepository.findByStudentId(student.studentId)} throws AppException(statusCode = 404, reason = "A student with student code: 1234 does not exist. Cannot update")
+        every {studentRepository.findByStudentId(student.studentId)} throws AppException(statusCode = 404, reason = "A student with student code: ${student.studentId} does not exist.  Cannot update")
 
         val exception = Assertions.assertThrows(AppException::class.java) {
             studentService.updateStudent(student)
         }
-        assertThat(exception.errorMessage).isEqualTo("A student with student code: 1234 does not exist. Cannot update")
+        assertThat(exception.errorMessage).isEqualTo("A student with student code: ${student.studentId} does not exist.  Cannot update")
         assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
     }
 
