@@ -22,28 +22,30 @@ class CourseService(
 
     fun getAllCourses(): List<Course> {
         log.info { "Attempting to get all Courses" }
-        val courses = courseRepository.findAll() as List<Course>
-        return courses
+        return courseRepository.findAll() as List<Course>
     }
 
     fun createCourse(course: Course): Course {
         log.info { "Attempting to create Course with Code : ${course.courseCode}" }
 
         val checkCourse: Course? = courseRepository.findByCourseCode(course.courseCode)
-        if(checkCourse != null){
-            throw AppException(statusCode = 409, reason = "A Course with Course code: ${course.courseCode} already exists")
+        if (checkCourse != null) {
+            throw AppException(
+                statusCode = 409,
+                reason = "A Course with Course code: ${course.courseCode} already exists"
+            )
         }
-
-        val retCourse: Course = courseRepository.save(course)
-        return retCourse
+        return courseRepository.save(course)
     }
 
     fun updateCourse(course: Course): Course {
         log.info { "Attempting to update Course with code : ${course.courseCode}" }
-        val existingCourse: Course = courseRepository.findByCourseCode(course.courseCode) ?: throw AppException(statusCode = 404, reason = "A Course with Course code: ${course.courseCode} does not exist.  Cannot update")
+        val existingCourse: Course = courseRepository.findByCourseCode(course.courseCode) ?: throw AppException(
+            statusCode = 404,
+            reason = "A Course with Course code: ${course.courseCode} does not exist.  Cannot update"
+        )
         course.id = existingCourse.id
-        val retCourse: Course = courseRepository.save(course)
-        return retCourse
+        return courseRepository.save(course)
     }
 
     fun deleteCourse(courseCode: String): Boolean {

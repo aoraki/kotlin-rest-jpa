@@ -22,28 +22,30 @@ class StudentService(
 
     fun getAllStudents(): List<Student> {
         log.info { "Attempting to get all students" }
-        val students = studentRepository.findAll() as List<Student>
-        return students
+        return studentRepository.findAll() as List<Student>
     }
 
     fun createStudent(student: Student): Student {
         log.info { "Attempting to create Student with Id : ${student.studentId}" }
 
         val checkStudent: Student? = studentRepository.findByStudentId(student.studentId)
-        if(checkStudent != null){
-            throw AppException(statusCode = 409, reason = "A student with student code: ${student.studentId} already exists")
+        if (checkStudent != null) {
+            throw AppException(
+                statusCode = 409,
+                reason = "A student with student code: ${student.studentId} already exists"
+            )
         }
-
-        val retStudent: Student = studentRepository.save(student)
-        return retStudent
+        return studentRepository.save(student)
     }
 
     fun updateStudent(student: Student): Student {
         log.info { "Attempting to update Student with Id : ${student.studentId}" }
-        val existingStudent: Student = studentRepository.findByStudentId(student.studentId) ?: throw AppException(statusCode = 404, reason = "A student with student code: ${student.studentId} does not exist.  Cannot update")
+        val existingStudent: Student = studentRepository.findByStudentId(student.studentId) ?: throw AppException(
+            statusCode = 404,
+            reason = "A student with student code: ${student.studentId} does not exist.  Cannot update"
+        )
         student.id = existingStudent.id
-        val retStudent: Student = studentRepository.save(student)
-        return retStudent
+        return studentRepository.save(student)
     }
 
     fun deleteStudent(studentId: String): Boolean {
@@ -67,20 +69,30 @@ class StudentService(
     }
 
     fun enrollStudent(studentId: String, courseCode: String): Student {
-        log.info { "Attempting to enroll Student with Id : ${studentId} in course with code : ${courseCode}"}
-        val student: Student = studentRepository.findByStudentId(studentId)  ?: throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot complete enrolment")
-        val course: Course = courseRepository.findByCourseCode(courseCode)  ?: throw AppException(statusCode = 404, reason = "A course with  code: $courseCode does not exist.  Cannot complete enrolment")
+        log.info { "Attempting to enroll Student with Id : ${studentId} in course with code : ${courseCode}" }
+        val student: Student = studentRepository.findByStudentId(studentId) ?: throw AppException(
+            statusCode = 404,
+            reason = "A student with student code: $studentId does not exist.  Cannot complete enrolment"
+        )
+        val course: Course = courseRepository.findByCourseCode(courseCode) ?: throw AppException(
+            statusCode = 404,
+            reason = "A course with  code: $courseCode does not exist.  Cannot complete enrolment"
+        )
         student.addCourse(course)
-        val retStudent: Student = studentRepository.save(student)
-        return retStudent
+        return studentRepository.save(student)
     }
 
     fun unenrollStudent(studentId: String, courseCode: String): Student {
-        log.info { "Attempting to unenroll Student with Id : ${studentId} in course with code : ${courseCode}"}
-        val student: Student = studentRepository.findByStudentId(studentId)  ?: throw AppException(statusCode = 404, reason = "A student with student code: $studentId does not exist.  Cannot complete unenrolment")
-        val course: Course = courseRepository.findByCourseCode(courseCode)  ?: throw AppException(statusCode = 404, reason = "A course with  code: $courseCode does not exist.  Cannot complete unenrolment")
+        log.info { "Attempting to unenroll Student with Id : ${studentId} in course with code : ${courseCode}" }
+        val student: Student = studentRepository.findByStudentId(studentId) ?: throw AppException(
+            statusCode = 404,
+            reason = "A student with student code: $studentId does not exist.  Cannot complete unenrolment"
+        )
+        val course: Course = courseRepository.findByCourseCode(courseCode) ?: throw AppException(
+            statusCode = 404,
+            reason = "A course with  code: $courseCode does not exist.  Cannot complete unenrolment"
+        )
         student.removeCourse(course)
-        val retStudent: Student = studentRepository.save(student)
-        return retStudent
+        return studentRepository.save(student)
     }
 }
