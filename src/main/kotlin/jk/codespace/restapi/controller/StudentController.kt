@@ -47,5 +47,9 @@ class StudentController(
         return ResponseEntity(student, HttpStatus.OK)
     }
 
-
+    @DeleteMapping("v1/students/{studentid}/courses/{coursecode}")
+    fun unenrollStudentInCourse(@PathVariable("studentid") studentId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<Student> {
+        val student = studentService.unenrollStudent(studentId = studentId, courseCode = courseCode)
+        return ResponseEntity(student, HttpStatus.OK)
+    }
 }
