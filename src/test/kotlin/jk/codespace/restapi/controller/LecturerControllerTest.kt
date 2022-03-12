@@ -247,14 +247,14 @@ class LecturerControllerTest {
             .andExpect(status().isNotFound)
     }
 
-    /*
+
     @Test
     fun enrollLecturerInCourse200Response(){
         val lecturer: Lecturer = generateLecturer("2222", "Peter", "Pan")
         val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
-        lecturer.addCourse(course)
+        lecturer.course = course
 
-        every {lecturerService.enrollLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)} returns lecturer
+        every {lecturerService.assignLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)} returns lecturer
 
         mvc.perform(
             post("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "3333")
@@ -264,9 +264,9 @@ class LecturerControllerTest {
             .andExpect(jsonPath("$.lecturerId").value("2222"))
             .andExpect(jsonPath("$.firstName").value("Peter"))
             .andExpect(jsonPath("$.lastName").value("Pan"))
-            .andExpect(jsonPath("$.courses.[0].courseCode").value("3333"))
-            .andExpect(jsonPath("$.courses.[0].courseName").value("IT"))
-            .andExpect(jsonPath("$.courses.[0].courseDescription").value("Degree in IT"))
+            .andExpect(jsonPath("$.course.courseCode").value("3333"))
+            .andExpect(jsonPath("$.course.courseName").value("IT"))
+            .andExpect(jsonPath("$.course.courseDescription").value("Degree in IT"))
     }
 
     @Test
@@ -281,7 +281,7 @@ class LecturerControllerTest {
 
     @Test
     fun enrollLecturerInCourseLecturerNotFound(){
-        every {lecturerService.enrollLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A lecturer with lecturer code: 2222 does not exist.  Cannot complete enrolment")
+        every {lecturerService.assignLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A lecturer with lecturer code: 2222 does not exist.  Cannot complete enrolment")
 
         mvc.perform(
             post("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "3333")
@@ -292,7 +292,7 @@ class LecturerControllerTest {
 
     @Test
     fun enrollLecturerInCourseCourseNotFound(){
-        every {lecturerService.enrollLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A course with  code: 3333 does not exist.  Cannot complete enrolment")
+        every {lecturerService.assignLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A course with  code: 3333 does not exist.  Cannot complete enrolment")
         mvc.perform(
             post("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "3333")
                 .accept(MediaType.APPLICATION_JSON)
@@ -303,27 +303,26 @@ class LecturerControllerTest {
     @Test
     fun unenrollLecturerInCourse200Response(){
         val lecturer: Lecturer = generateLecturer("2222", "Peter", "Pan")
-        val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
-        lecturer.addCourse(course)
+        val courseCode = "4445"
+        lecturer.course = null
 
-        every {lecturerService.unenrollLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)} returns lecturer
+        every {lecturerService.deassignLecturer(lecturerId = lecturer.lecturerId, courseCode = courseCode)} returns lecturer
 
         mvc.perform(
-            delete("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "3333")
+            delete("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "4445")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.lecturerId").value("2222"))
             .andExpect(jsonPath("$.firstName").value("Peter"))
             .andExpect(jsonPath("$.lastName").value("Pan"))
-            .andExpect(jsonPath("$.courses.[0].courseCode").value("3333"))
-            .andExpect(jsonPath("$.courses.[0].courseName").value("IT"))
-            .andExpect(jsonPath("$.courses.[0].courseDescription").value("Degree in IT"))
-    }
+            .andExpect(jsonPath("$.course").isEmpty)
+     }
+
 
     @Test
     fun unenrollLecturerInCourseLecturerNotFound(){
-        every {lecturerService.unenrollLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A lecturer with lecturer code: 2222 does not exist.  Cannot complete enrolment")
+        every {lecturerService.deassignLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A lecturer with lecturer code: 2222 does not exist.  Cannot complete enrolment")
 
         mvc.perform(
             delete("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "3333")
@@ -334,14 +333,14 @@ class LecturerControllerTest {
 
     @Test
     fun unenrollLecturerInCourseCourseNotFound(){
-        every {lecturerService.unenrollLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A course with  code: 3333 does not exist.  Cannot complete enrolment")
+        every {lecturerService.deassignLecturer(lecturerId = "2222", courseCode = "3333")} throws AppException(statusCode = 404, reason = "A course with  code: 3333 does not exist.  Cannot complete enrolment")
         mvc.perform(
             delete("/v1/lecturers/{lecturerid}/courses/{coursecode}", "2222", "3333")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound)
     }
-*/
+
 
     fun generateLecturer(lecturerId: String, firstName: String, lastName: String) : Lecturer{
         return Lecturer(lecturerId = lecturerId, firstName = firstName, lastName = lastName)

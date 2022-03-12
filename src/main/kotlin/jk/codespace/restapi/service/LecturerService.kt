@@ -31,20 +31,14 @@ class LecturerService (
 
         val checkLecturer: Lecturer? = lecturerRepository.findByLecturerId(lecturer.lecturerId)
         if (checkLecturer != null) {
-            throw AppException(
-                statusCode = 409,
-                reason = "A lecturer with lecturer id: ${lecturer.lecturerId} already exists"
-            )
+            throw AppException(statusCode = 409, reason = "A lecturer with lecturer id: ${lecturer.lecturerId} already exists")
         }
         return lecturerRepository.save(lecturer)
     }
 
     fun updateLecturer(lecturer: Lecturer): Lecturer {
         log.info { "Attempting to update Lecturer with Id : ${lecturer.lecturerId}" }
-        val existingLecturer: Lecturer = lecturerRepository.findByLecturerId(lecturer.lecturerId) ?: throw AppException(
-            statusCode = 404,
-            reason = "A lecturer with lecturer id: ${lecturer.lecturerId} does not exist.  Cannot update"
-        )
+        val existingLecturer: Lecturer = lecturerRepository.findByLecturerId(lecturer.lecturerId) ?: throw AppException(statusCode = 404, reason = "A lecturer with lecturer id: ${lecturer.lecturerId} does not exist.  Cannot update")
         lecturer.id = existingLecturer.id
         return lecturerRepository.save(lecturer)
     }
