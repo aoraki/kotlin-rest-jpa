@@ -3,10 +3,8 @@ package jk.codespace.restapi.controller
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import jk.codespace.restapi.entities.Course
-import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.service.CourseService
-import jk.codespace.restapi.service.StudentService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
