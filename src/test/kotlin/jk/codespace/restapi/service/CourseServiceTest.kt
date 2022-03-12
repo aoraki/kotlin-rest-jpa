@@ -5,6 +5,7 @@ import io.mockk.mockk
 import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.repository.CourseRepository
+import jk.codespace.restapi.repository.LecturerRepository
 import jk.codespace.restapi.repository.StudentRepository
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -18,8 +19,11 @@ class CourseServiceTest {
     // Mock out the Course Repository
     private val courseRepository = mockk<CourseRepository>()
 
+    // Mock out the Course Repository
+    private val lecturerRepository = mockk<LecturerRepository>()
+
     // Create instance of class under test
-    private val courseService = CourseService(studentRepository = studentRepository, courseRepository = courseRepository)
+    private val courseService = CourseService(studentRepository = studentRepository, courseRepository = courseRepository, lecturerRepository = lecturerRepository)
 
     @Test
     fun getCourseSuccess() {
@@ -50,7 +54,8 @@ class CourseServiceTest {
 
     @Test
     fun getAllCoursesSuccess() {
-        every { courseRepository.findAll()} returns arrayListOf(Course(12345, courseCode = "123", courseName = "IT", courseDescription = "Degree in IT"),Course(67891,courseCode = "456", courseName = "Science", courseDescription = "Degree in Science"))
+        every { courseRepository.findAll()} returns arrayListOf(Course(12345, courseCode = "123", courseName = "IT", courseDescription = "Degree in IT"),Course(67891,
+            courseCode = "456", courseName = "Science", courseDescription = "Degree in Science"))
 
         val response = courseService.getAllCourses()
 

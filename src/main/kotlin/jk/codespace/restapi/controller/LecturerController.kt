@@ -1,6 +1,8 @@
 package jk.codespace.restapi.controller
 
+import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Lecturer
+import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.service.LecturerService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -38,5 +40,17 @@ class LecturerController(
     fun deleteLecturerById(@PathVariable("lecturerid") lecturerId: String): ResponseEntity<Boolean> {
         val deleted = lecturerService.deleteLecturer(lecturerId = lecturerId)
         return ResponseEntity(deleted, HttpStatus.OK)
+    }
+
+    @PostMapping("v1/lecturers/{lecturerid}/courses/{coursecode}")
+    fun assignLecturerToCourse(@PathVariable("lecturerid") lecturerId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<Lecturer> {
+        val lecturer = lecturerService.assignLecturer(lecturerId = lecturerId, courseCode = courseCode)
+        return ResponseEntity(lecturer, HttpStatus.OK)
+    }
+
+    @DeleteMapping("v1/lecturers/{lecturerid}/courses/{coursecode}")
+    fun deassignLecturerFromCourse(@PathVariable("lecturerid") lecturerId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<Lecturer> {
+        val lecturer = lecturerService.deassignLecturer(lecturerId = lecturerId, courseCode = courseCode)
+        return ResponseEntity(lecturer, HttpStatus.OK)
     }
 }

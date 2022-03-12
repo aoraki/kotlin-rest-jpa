@@ -1,5 +1,6 @@
 package jk.codespace.restapi.service
 
+import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Lecturer
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.repository.CourseRepository
@@ -7,6 +8,7 @@ import jk.codespace.restapi.repository.LecturerRepository
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
+@Suppress("UNCHECKED_CAST")
 @Service
 class LecturerService (
     private val courseRepository: CourseRepository,
@@ -52,20 +54,42 @@ class LecturerService (
 
         val lecturer: Lecturer = lecturerRepository.findByLecturerId(lecturerId)  ?: throw AppException(statusCode = 404, reason = "A lecturer with lecturer id: $lecturerId does not exist.  Cannot delete")
 
-        /*
-        val courses: Set<Course> = student.courses
-
-        // Ensure courses that the student is currently enrolled in are disassociated from the student
-        for(course in courses){
-            course.removeStudent(student)
-            courseRepository.save(course)
-        }*/
-
         try {
             lecturerRepository.delete(lecturer)
         } catch (ex: Exception) {
             throw AppException(500, "Unexpected error encountered deleting lecturer with lecturer id $lecturerId")
         }
         return true
+    }
+
+    fun assignLecturer(lecturerId: String, courseCode: String): Lecturer {
+        log.info { "Attempting to assign Lecturer with Id : ${lecturerId} to course with code : ${courseCode}" }
+        val lecturer: Lecturer = lecturerRepository.findByLecturerId(lecturerId) ?: throw AppException(
+            statusCode = 404,
+            reason = "A lecturer with lecturer id: $lecturerId does not exist.  Cannot complete assignment"
+        )
+        val course: Course = courseRepository.findByCourseCode(courseCode) ?: throw AppException(
+            statusCode = 404,
+            reason = "A course with  code: $courseCode does not exist.  Cannot complete assignment"
+        )
+
+        if (course.lecturer != null) {
+            throw AppException(
+                statusCode = 409,
+                reason = "Course ${courseCode} already has a lecturer assigned to it"
+            )
+        }
+        lecturer.course = course
+        return lecturerRepository.save(lecturer)
+    }
+
+    fun deassignLecturer(lecturerId: String, courseCode: String): Lecturer {
+        log.info { "Attempting to assign Lecturer with Id : ${lecturerId} to course with code : ${courseCode}" }
+        val lecturer: Lecturer = lecturerRepository.findByLecturerId(lecturerId) ?: throw AppException(
+            statusCode = 404,
+            reason = "A lecturer with lecturer id: $lecturerId does not exist.  Cannot complete assignment"
+        )
+        lecturer.course = null
+        return lecturerRepository.save(lecturer)
     }
 }

@@ -239,6 +239,7 @@ class CourseControllerTest {
             .andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 
+    // Utility function to create test courses to use in tests
     fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : Course {
         return Course(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
     }

@@ -4,6 +4,7 @@ import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.repository.CourseRepository
+import jk.codespace.restapi.repository.LecturerRepository
 import jk.codespace.restapi.repository.StudentRepository
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 @Service
 class CourseService(
     private val courseRepository: CourseRepository,
-    private val studentRepository: StudentRepository
+    private val studentRepository: StudentRepository,
+    private val lecturerRepository: LecturerRepository
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -58,6 +60,14 @@ class CourseService(
         for(student in students){
             student.removeCourse(course)
             studentRepository.save(student)
+        }
+
+        // Ensure lecturers that are assigned to the course are deassigned
+        val lecturer = course.lecturer
+        if (lecturer != null) {
+            // Set the lecturers course to null and then save the lecturer object
+            lecturer.course = null
+            lecturerRepository.save(lecturer)
         }
 
         // The course can now be safely deleted
