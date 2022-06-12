@@ -9,6 +9,14 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    #properties:
+     # javax:
+      #  persistence:
+       #   schema-generation:
+        #    scripts:
+         #     action: create
+          #    create-target: schema.sql
+           #   create-source: metadata
   h2:
     console:
       path: /h2
