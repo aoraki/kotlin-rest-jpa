@@ -15,7 +15,7 @@ class Lecturer (
     var lecturerId: String,
 
     @JsonManagedReference
-    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToOne(cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY)
     @JoinTable(name = "lecturer_course",
         joinColumns = [JoinColumn(name = "lecturer_id", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "course_id",referencedColumnName = "id")]

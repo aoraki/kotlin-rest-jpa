@@ -18,7 +18,7 @@ class Course(
     var students: Set<Student> = mutableSetOf(),
 
     @JsonBackReference
-    @OneToOne(mappedBy = "course", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "course", cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY)
     var lecturer: Lecturer? = null,
 
     var courseName: String,
