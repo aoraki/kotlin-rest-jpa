@@ -2,6 +2,9 @@ package jk.codespace.restapi.controller
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import jk.codespace.restapi.dto.CourseDTO
+import jk.codespace.restapi.dto.CourseDTOShallow
+import jk.codespace.restapi.dto.LecturerDTO
 import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Lecturer
 import jk.codespace.restapi.exception.AppException
@@ -250,8 +253,8 @@ class LecturerControllerTest {
 
     @Test
     fun enrollLecturerInCourse200Response(){
-        val lecturer: Lecturer = generateLecturer("2222", "Peter", "Pan")
-        val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
+        val lecturer: LecturerDTO = generateLecturer("2222", "Peter", "Pan")
+        val course: CourseDTOShallow = generateCourseShallow(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
         lecturer.course = course
 
         every {lecturerService.assignLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)} returns lecturer
@@ -302,7 +305,7 @@ class LecturerControllerTest {
 
     @Test
     fun unenrollLecturerInCourse200Response(){
-        val lecturer: Lecturer = generateLecturer("2222", "Peter", "Pan")
+        val lecturer: LecturerDTO = generateLecturer("2222", "Peter", "Pan")
         val courseCode = "4445"
         lecturer.course = null
 
@@ -342,11 +345,12 @@ class LecturerControllerTest {
     }
 
 
-    fun generateLecturer(lecturerId: String, firstName: String, lastName: String) : Lecturer{
-        return Lecturer(lecturerId = lecturerId, firstName = firstName, lastName = lastName)
+    fun generateLecturer(lecturerId: String, firstName: String, lastName: String) : LecturerDTO {
+        return LecturerDTO(lecturerId = lecturerId, firstName = firstName, lastName = lastName, course = null)
     }
 
-    fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : Course {
-        return Course(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
+    fun generateCourseShallow(courseCode: String, courseName: String, courseDescription: String) : CourseDTOShallow {
+        return CourseDTOShallow(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
     }
+
 }

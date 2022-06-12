@@ -2,7 +2,7 @@ package jk.codespace.restapi.controller
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
-import jk.codespace.restapi.entities.Course
+import jk.codespace.restapi.dto.CourseDTO
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.service.CourseService
 import org.junit.jupiter.api.Test
@@ -109,9 +109,9 @@ class CourseControllerTest {
 
         val payload = """
                 {
-                    "studentId": "2222",
-                    "firstName": "Pharmacy",
-                    "lastName": "Degree in Pharmacy"
+                    "courseCode": "2222",
+                    "courseName": "Pharmacy",
+                    "courseDescription": "Degree in Pharmacy"
                 }
         """.trimIndent()
 
@@ -132,9 +132,9 @@ class CourseControllerTest {
 
         val payload = """
                 {
-                    "studentId": "2222",
-                    "firstName": "Pharmacy",
-                    "lastName": "Degree in Pharmacy"
+                    "courseCode": "2222",
+                    "courseName": "Pharmacy",
+                    "courseDescription": "Degree in Pharmacy"
                 }
         """.trimIndent()
 
@@ -150,9 +150,9 @@ class CourseControllerTest {
     fun createCourseReturn415(){
         val payload = """
                 {
-                    "studentId": "2222",
-                    "firstName": "Pharmacy",
-                    "lastName": "Degree in Pharmacy"
+                    "courseCode": "2222",
+                    "courseName": "Pharmacy",
+                    "courseDescription": "Degree in Pharmacy"
                 }
         """.trimIndent()
 
@@ -171,8 +171,8 @@ class CourseControllerTest {
         val payload = """
                 {
                     "courseCode": "2222",
-                    "courseName": "II",
-                    "courseDescription": "Degree in IT"
+                    "courseName": "Pharmacy",
+                    "courseDescription": "Degree in Pharmacy"
                 }
         """.trimIndent()
 
@@ -193,9 +193,9 @@ class CourseControllerTest {
 
         val payload = """
                 {
-                    "studentId": "2222",
-                    "firstName": "IT",
-                    "lastName": "Degree in IT"
+                    "courseCode": "2222",
+                    "courseName": "Pharmacy",
+                    "courseDescription": "Degree in Pharmacy"
                 }
         """.trimIndent()
 
@@ -211,9 +211,9 @@ class CourseControllerTest {
     fun updateCourseReturn415(){
         val payload = """
                 {
-                    "studentId": "2222",
-                    "firstName": "IT",
-                    "lastName": "Degree in IT"
+                    "courseCode": "2222",
+                    "courseName": "IT",
+                    "courseDescription": "Degree in IT"
                 }
         """.trimIndent()
 
@@ -240,7 +240,7 @@ class CourseControllerTest {
     }
 
     // Utility function to create test courses to use in tests
-    fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : Course {
-        return Course(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
+    fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : CourseDTO {
+        return CourseDTO(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription, lecturer = null)
     }
 }

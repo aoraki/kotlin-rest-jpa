@@ -2,6 +2,8 @@ package jk.codespace.restapi.service
 
 import io.mockk.every
 import io.mockk.mockk
+import jk.codespace.restapi.dto.LecturerDTO
+import jk.codespace.restapi.entities.Course
 import jk.codespace.restapi.entities.Lecturer
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.repository.CourseRepository
@@ -78,7 +80,7 @@ class LecturerServiceTest {
     @Test
     fun createLecturerSuccess() {
         val persistedLecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jim", lastName = "Hughes")
-        val inputLecturer = Lecturer(lecturerId = "1234", firstName = "Jim", lastName = "Hughes")
+        val inputLecturer = LecturerDTO(lecturerId = "1234", firstName = "Jim", lastName = "Hughes", course = null)
         every {lecturerRepository.save(any())} returns persistedLecturer
         every {lecturerRepository.findByLecturerId(inputLecturer.lecturerId)} returns null
 
@@ -91,7 +93,7 @@ class LecturerServiceTest {
     @Test
     fun createLecturerAlreadyFound() {
         val existingLecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jim", lastName = "Hughes")
-        val inputLecturer = Lecturer(lecturerId = "1234", firstName = "Jim", lastName = "Hughes")
+        val inputLecturer = LecturerDTO(lecturerId = "1234", firstName = "Jim", lastName = "Hughes", course = null)
         every {lecturerRepository.findByLecturerId(inputLecturer.lecturerId)} returns existingLecturer
 
         val exception = Assertions.assertThrows(AppException::class.java) {
@@ -103,7 +105,7 @@ class LecturerServiceTest {
 
     @Test
     fun updateLecturerSuccess() {
-        val lecturer = Lecturer(lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val lecturer = LecturerDTO(lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes", course = null)
         every {lecturerRepository.save(any())} returns Lecturer(id = 123456, lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
         every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns Lecturer(id = 123456, lecturerId = "1234", firstName = "Jim", lastName = "Hughes")
 
@@ -115,7 +117,7 @@ class LecturerServiceTest {
 
     @Test
     fun updateLecturerNotFound() {
-        val lecturer = Lecturer(lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val lecturer = LecturerDTO(lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes", course = null)
 
         every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} throws AppException(statusCode = 404, reason = "A lecturer with lecturer code: ${lecturer.lecturerId} does not exist.  Cannot update")
 
@@ -128,10 +130,12 @@ class LecturerServiceTest {
 
     @Test
     fun deleteLecturerSuccess() {
-        val lecturer = Lecturer(lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
-        every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns Lecturer(id = 123456, lecturerId = "1234", firstName = "Jim", lastName = "Hughes")
+        val lecturerId = "1234"
+        val course = Course(courseCode = "1111", courseName = "IT", courseDescription = "Degree in IT")
+        every {lecturerRepository.findByLecturerId(lecturerId)} returns Lecturer(id = 123456, lecturerId = "1234", firstName = "Jim", lastName = "Hughes", course = course)
         every {lecturerRepository.delete(any())} returns Unit
-        val response = lecturerService.deleteLecturer(lecturer.lecturerId)
+        every {courseRepository.save(any())} returns course
+        val response = lecturerService.deleteLecturer(lecturerId)
         assertThat(response).isTrue
     }
 
@@ -159,5 +163,115 @@ class LecturerServiceTest {
         assertThat(exception.httpStatus).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
+    @Test
+    fun assignLecturerToCourseSuccess() {
+        val lecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val course = Course(id = 55555, courseCode = "BSC-111", courseName = "IT", courseDescription = "Degree in IT")
+        lecturer.course = course
+        every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns lecturer
+        every {courseRepository.findByCourseCode(course.courseCode)} returns course
+        every {lecturerRepository.save(any())} returns lecturer
+
+        val response = lecturerService.assignLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)
+        assertThat(response.lecturerId).isEqualTo("1234")
+        assertThat(response.firstName).isEqualTo("Jimmy")
+        assertThat(response.lastName).isEqualTo("Hughes")
+        assertThat(response.course?.courseCode).isEqualTo("BSC-111")
+        assertThat(response.course?.courseName).isEqualTo("IT")
+        assertThat(response.course?.courseDescription).isEqualTo("Degree in IT")
+    }
+
+
+    @Test
+    fun assignLecturerToCourseLecturerNotFound() {
+        val lecturerId = "1234"
+        val courseCode = "BSC-123"
+
+        every {lecturerRepository.findByLecturerId(lecturerId)} throws AppException(statusCode = 404, reason = "A lecturer with lecturer id: $lecturerId does not exist.  Cannot complete assignment")
+
+        val exception = Assertions.assertThrows(AppException::class.java) {
+            lecturerService.assignLecturer(lecturerId = lecturerId, courseCode = courseCode)
+        }
+        assertThat(exception.errorMessage).isEqualTo("A lecturer with lecturer id: $lecturerId does not exist.  Cannot complete assignment")
+        assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
+    }
+
+
+    @Test
+    fun assignLecturerToCourseCourseNotFound() {
+        val lecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val courseCode = "BSC-123"
+
+        every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns lecturer
+        every {courseRepository.findByCourseCode(courseCode)} throws AppException(statusCode = 404, reason = "A course with  code: $courseCode does not exist.  Cannot complete assignment")
+
+        val exception = Assertions.assertThrows(AppException::class.java) {
+            lecturerService.assignLecturer(lecturerId = lecturer.lecturerId, courseCode = courseCode)
+        }
+        assertThat(exception.errorMessage).isEqualTo("A course with  code: $courseCode does not exist.  Cannot complete assignment")
+        assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
+    }
+
+    @Test
+    fun assignLecturerToCourseCourseAlreadyAssignedToOtherLecturer() {
+        val lecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val otherLecturer = Lecturer(id = 2222, lecturerId = "2222", firstName = "James", lastName = "Hurley")
+
+        val course = Course(id = 55555, courseCode = "BSC-111", courseName = "IT", courseDescription = "Degree in IT", lecturer = otherLecturer)
+        every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns lecturer
+        every {courseRepository.findByCourseCode(course.courseCode)} returns course
+
+        val exception = Assertions.assertThrows(AppException::class.java) {
+            lecturerService.assignLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)
+        }
+
+        assertThat(exception.errorMessage).isEqualTo("Course ${course.courseCode} already has a lecturer assigned to it")
+        assertThat(exception.httpStatus).isEqualTo(HttpStatus.CONFLICT)
+    }
+
+
+    @Test
+    fun deassignLecturerFromCourseSuccess() {
+        val lecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val course = Course(id = 55555, courseCode = "BSC-111", courseName = "IT", courseDescription = "Degree in IT")
+        every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns lecturer
+        every {courseRepository.findByCourseCode(course.courseCode)} returns course
+        every {lecturerRepository.save(any())} returns lecturer
+
+        val response = lecturerService.deassignLecturer(lecturerId = lecturer.lecturerId, courseCode = course.courseCode)
+        assertThat(response.lecturerId).isEqualTo("1234")
+        assertThat(response.firstName).isEqualTo("Jimmy")
+        assertThat(response.lastName).isEqualTo("Hughes")
+        assertThat(response.course).isNull()
+    }
+
+    @Test
+    fun deassignLecturerFromCourseLecturerNotFound() {
+        val lecturerId = "1234"
+        val courseCode = "BSC-123"
+
+        every {lecturerRepository.findByLecturerId(lecturerId)} throws AppException(statusCode = 404, reason = "A lecturer with lecturer id: $lecturerId does not exist.  Cannot complete deassignment")
+
+        val exception = Assertions.assertThrows(AppException::class.java) {
+            lecturerService.assignLecturer(lecturerId = lecturerId, courseCode = courseCode)
+        }
+        assertThat(exception.errorMessage).isEqualTo("A lecturer with lecturer id: $lecturerId does not exist.  Cannot complete deassignment")
+        assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
+    }
+
+    @Test
+    fun deassignLecturerFromCourseCourseNotFound() {
+        val lecturer = Lecturer(id = 123456, lecturerId = "1234", firstName = "Jimmy", lastName = "Hughes")
+        val courseCode = "BSC-123"
+
+        every {lecturerRepository.findByLecturerId(lecturer.lecturerId)} returns lecturer
+        every {courseRepository.findByCourseCode(courseCode)} throws AppException(statusCode = 404, reason = "A course with  code: $courseCode does not exist.  Cannot complete deassignment")
+
+        val exception = Assertions.assertThrows(AppException::class.java) {
+            lecturerService.assignLecturer(lecturerId = lecturer.lecturerId, courseCode = courseCode)
+        }
+        assertThat(exception.errorMessage).isEqualTo("A course with  code: $courseCode does not exist.  Cannot complete deassignment")
+        assertThat(exception.httpStatus).isEqualTo(HttpStatus.NOT_FOUND)
+    }
 }
 

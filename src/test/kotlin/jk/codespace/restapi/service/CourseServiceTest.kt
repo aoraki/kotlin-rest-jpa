@@ -2,7 +2,11 @@ package jk.codespace.restapi.service
 
 import io.mockk.every
 import io.mockk.mockk
+import jk.codespace.restapi.dto.CourseDTO
+import jk.codespace.restapi.dto.CourseDTOShallow
 import jk.codespace.restapi.entities.Course
+import jk.codespace.restapi.entities.Lecturer
+import jk.codespace.restapi.entities.Student
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.repository.CourseRepository
 import jk.codespace.restapi.repository.LecturerRepository
@@ -81,7 +85,7 @@ class CourseServiceTest {
     @Test
     fun createCourseSuccess() {
         val persistedCourse = Course(id = 123456, courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
-        val inputCourse = Course(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
+        val inputCourse =generateCourse(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
         every {courseRepository.save(any())} returns persistedCourse
         every {courseRepository.findByCourseCode(inputCourse.courseCode)} returns null
 
@@ -94,7 +98,7 @@ class CourseServiceTest {
     @Test
     fun createCourseAlreadyFound() {
         val existingCourse = Course(id = 123456, courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
-        val inputCourse = Course(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
+        val inputCourse = generateCourse(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
         every {courseRepository.findByCourseCode(inputCourse.courseCode)} returns existingCourse
 
         val exception = org.junit.jupiter.api.Assertions.assertThrows(AppException::class.java) {
@@ -106,7 +110,7 @@ class CourseServiceTest {
 
     @Test
     fun updateCourseSuccess() {
-        val course = Course(courseCode = "1234", courseName = "Information Technology", courseDescription = "Degree in IT")
+        val course = generateCourse(courseCode = "1234", courseName = "Information Technology", courseDescription = "Degree in IT")
         every {courseRepository.save(any())} returns Course(id = 123456, courseCode = "1234", courseName = "Information Technology", courseDescription = "Degree in IT")
         every {courseRepository.findByCourseCode(course.courseCode)} returns Course(id = 123456, courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
 
@@ -118,7 +122,7 @@ class CourseServiceTest {
 
     @Test
     fun updateCourseNotFound() {
-        val course = Course(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
+        val course = generateCourse(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
 
         every {courseRepository.findByCourseCode(course.courseCode)} throws AppException(statusCode = 404, reason = "A Course with Course code: 1234 does not exist. Cannot update")
 
@@ -131,10 +135,15 @@ class CourseServiceTest {
 
     @Test
     fun deleteCourseSuccess() {
-        val course = Course(courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
-        every {courseRepository.findByCourseCode(course.courseCode)} returns Course(id = 123456, courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT")
+        val courseCode = "1234"
+        val student = Student(studentId = "111", firstName = "Joe", lastName = "Blggs")
+        val studentSet = setOf(student)
+        val lecturer = Lecturer(lecturerId = "111", firstName = "Tom", lastName = "Thumb")
+        every {courseRepository.findByCourseCode(courseCode)} returns Course(id = 123456, courseCode = "1234", courseName = "IT", courseDescription = "Degree in IT", lecturer = lecturer, students = studentSet)
         every {courseRepository.delete(any())} returns Unit
-        val response = courseService.deleteCourse(course.courseCode)
+        every {studentRepository.save(any())} returns student
+        every {lecturerRepository.save(any())} returns lecturer
+        val response = courseService.deleteCourse(courseCode)
         Assertions.assertThat(response).isTrue
     }
 
@@ -162,6 +171,8 @@ class CourseServiceTest {
         Assertions.assertThat(exception.httpStatus).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
-
-
+    // Utility function to create test courses to use in tests
+    fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : CourseDTOShallow {
+        return CourseDTOShallow(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
+    }
 }

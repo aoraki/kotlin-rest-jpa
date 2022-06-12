@@ -2,8 +2,8 @@ package jk.codespace.restapi.controller
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
-import jk.codespace.restapi.entities.Course
-import jk.codespace.restapi.entities.Student
+import jk.codespace.restapi.dto.CourseDTOShallow
+import jk.codespace.restapi.dto.StudentDTO
 import jk.codespace.restapi.exception.AppException
 import jk.codespace.restapi.service.StudentService
 import org.junit.jupiter.api.Test
@@ -249,9 +249,12 @@ class StudentControllerTest {
 
     @Test
     fun enrollStudentInCourse200Response(){
-        val student: Student = generateStudent("2222", "Peter", "Pan")
-        val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
-        student.addCourse(course)
+        val student: StudentDTO = generateStudent("2222", "Peter", "Pan")
+        val course: CourseDTOShallow = generateCourseShallow(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
+
+        var courseDTOSet = mutableSetOf<CourseDTOShallow>()
+        courseDTOSet.add(course)
+        student.courses = courseDTOSet
 
         every {studentService.enrollStudent(studentId = student.studentId, courseCode = course.courseCode)} returns student
 
@@ -301,9 +304,12 @@ class StudentControllerTest {
 
     @Test
     fun unenrollStudentInCourse200Response(){
-        val student: Student = generateStudent("2222", "Peter", "Pan")
-        val course: Course = generateCourse(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
-        student.addCourse(course)
+        val student: StudentDTO = generateStudent("2222", "Peter", "Pan")
+        val course: CourseDTOShallow = generateCourseShallow(courseCode = "3333", courseName = "IT", courseDescription = "Degree in IT")
+
+        var courseDTOSet = mutableSetOf<CourseDTOShallow>()
+        courseDTOSet.add(course)
+        student.courses = courseDTOSet
 
         every {studentService.unenrollStudent(studentId = student.studentId, courseCode = course.courseCode)} returns student
 
@@ -341,14 +347,11 @@ class StudentControllerTest {
             .andExpect(status().isNotFound)
     }
 
-
-
-    fun generateStudent(studentId: String, firstName: String, lastName: String) : Student{
-        return Student(studentId = studentId, firstName = firstName, lastName = lastName)
+    fun generateStudent(studentId: String, firstName: String, lastName: String) : StudentDTO {
+        return StudentDTO(studentId = studentId, firstName = firstName, lastName = lastName, courses = mutableSetOf())
     }
 
-    fun generateCourse(courseCode: String, courseName: String, courseDescription: String) : Course {
-        return Course(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
+    fun generateCourseShallow(courseCode: String, courseName: String, courseDescription: String) : CourseDTOShallow {
+        return CourseDTOShallow(courseCode = courseCode, courseName = courseName, courseDescription = courseDescription)
     }
-
 }

@@ -1,8 +1,6 @@
 package jk.codespace.restapi.controller
 
-import jk.codespace.restapi.entities.Course
-import jk.codespace.restapi.entities.Lecturer
-import jk.codespace.restapi.entities.Student
+import jk.codespace.restapi.dto.LecturerDTO
 import jk.codespace.restapi.service.LecturerService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -13,25 +11,25 @@ class LecturerController(
     private val lecturerService: LecturerService
 ) {
     @GetMapping("v1/lecturers/{lecturerid}")
-    fun getLecturerById(@PathVariable("lecturerid") lecturerId: String): ResponseEntity<Lecturer> {
+    fun getLecturerById(@PathVariable("lecturerid") lecturerId: String): ResponseEntity<LecturerDTO> {
         val lecturer = lecturerService.getLecturer(lecturerId = lecturerId)
         return ResponseEntity(lecturer, HttpStatus.OK)
     }
 
     @PostMapping("v1/lecturers")
-    fun createLecturer(@RequestBody lecturer: Lecturer): ResponseEntity<Lecturer> {
+    fun createLecturer(@RequestBody lecturer: LecturerDTO): ResponseEntity<LecturerDTO> {
         val createdLecturer = lecturerService.createLecturer(lecturer = lecturer)
         return ResponseEntity(createdLecturer, HttpStatus.CREATED)
     }
 
     @GetMapping("v1/lecturers")
-    fun getAllLecturers(): ResponseEntity<List<Lecturer>> {
+    fun getAllLecturers(): ResponseEntity<List<LecturerDTO>> {
         val lecturers = lecturerService.getAllLecturers()
         return ResponseEntity(lecturers, HttpStatus.OK)
     }
 
     @PatchMapping("v1/lecturers")
-    fun updateLecturer(@RequestBody lecturer: Lecturer): ResponseEntity<Lecturer> {
+    fun updateLecturer(@RequestBody lecturer: LecturerDTO): ResponseEntity<LecturerDTO> {
         val upatedLecturer = lecturerService.updateLecturer(lecturer = lecturer)
         return ResponseEntity(upatedLecturer, HttpStatus.OK)
     }
@@ -43,13 +41,13 @@ class LecturerController(
     }
 
     @PostMapping("v1/lecturers/{lecturerid}/courses/{coursecode}")
-    fun assignLecturerToCourse(@PathVariable("lecturerid") lecturerId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<Lecturer> {
+    fun assignLecturerToCourse(@PathVariable("lecturerid") lecturerId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<LecturerDTO> {
         val lecturer = lecturerService.assignLecturer(lecturerId = lecturerId, courseCode = courseCode)
         return ResponseEntity(lecturer, HttpStatus.OK)
     }
 
     @DeleteMapping("v1/lecturers/{lecturerid}/courses/{coursecode}")
-    fun deassignLecturerFromCourse(@PathVariable("lecturerid") lecturerId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<Lecturer> {
+    fun deassignLecturerFromCourse(@PathVariable("lecturerid") lecturerId: String, @PathVariable("coursecode") courseCode: String): ResponseEntity<LecturerDTO> {
         val lecturer = lecturerService.deassignLecturer(lecturerId = lecturerId, courseCode = courseCode)
         return ResponseEntity(lecturer, HttpStatus.OK)
     }
