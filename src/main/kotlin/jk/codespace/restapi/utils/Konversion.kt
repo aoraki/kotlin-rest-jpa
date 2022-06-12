@@ -15,10 +15,6 @@ class Konversion {
         return Student(studentId = studentDTO.studentId, firstName = studentDTO.firstName, lastName = studentDTO.lastName)
     }
 
-    fun convertStudentDTOToStudentWithDatabaseId(studentDTO: StudentDTO, databaseIdentifier: Int) : Student {
-        return Student(id = databaseIdentifier, studentId = studentDTO.studentId, firstName = studentDTO.firstName, lastName = studentDTO.lastName)
-    }
-
     fun convertCourseToDTO(course: Course): CourseDTO {
         return CourseDTO(courseCode = course.courseCode, courseName = course.courseName, courseDescription = course.courseDescription, students = convertStudentSetToDTOSet(course.students), lecturer = course.lecturer?.let {
             convertLecturerToDTOShallow(it)
@@ -45,10 +41,6 @@ class Konversion {
 
     fun convertLecturerDTOToLecturer(lecturerDTO: LecturerDTO) : Lecturer {
         return Lecturer(lecturerId = lecturerDTO.lecturerId, firstName = lecturerDTO.firstName, lastName = lecturerDTO.lastName)
-    }
-
-    fun convertLecturerDTOToLecturerWithDatabaseId(lecturerDTO: LecturerDTO, databaseIdentifier: Int) : Lecturer {
-        return Lecturer(id = databaseIdentifier, lecturerId = lecturerDTO.lecturerId, firstName = lecturerDTO.firstName, lastName = lecturerDTO.lastName)
     }
 
     fun convertCourseSetToDTOSet(courseSet: Set<Course>): Set<CourseDTOShallow> {

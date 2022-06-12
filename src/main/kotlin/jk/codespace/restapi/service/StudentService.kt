@@ -47,9 +47,9 @@ class StudentService(
     fun updateStudent(studentDTO: StudentDTO): StudentDTO {
         log.info { "Attempting to update Student with Id : ${studentDTO.studentId}" }
         val student: Student = studentRepository.findByStudentId(studentDTO.studentId) ?: throw AppException(statusCode = 404, reason = "A student with student code: ${studentDTO.studentId} does not exist.  Cannot update")
-
-        val updatedStudent: Student = conversion.convertStudentDTOToStudentWithDatabaseId(studentDTO, student.id)
-        val retStudent: Student = studentRepository.save(updatedStudent)
+        student.firstName = studentDTO.firstName
+        student.lastName = studentDTO.lastName
+        val retStudent: Student = studentRepository.save(student)
         return conversion.convertStudentToDTO(retStudent)
     }
 

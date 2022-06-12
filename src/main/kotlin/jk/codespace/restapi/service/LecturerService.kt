@@ -52,8 +52,10 @@ class LecturerService (
         log.info { "Attempting to update Lecturer with Id : ${lecturer.lecturerId}" }
         val existingLecturer: Lecturer = lecturerRepository.findByLecturerId(lecturer.lecturerId) ?: throw AppException(statusCode = 404, reason = "A lecturer with lecturer id: ${lecturer.lecturerId} does not exist.  Cannot update")
 
-        val updatedLecturer: Lecturer = conversion.convertLecturerDTOToLecturerWithDatabaseId(lecturer, existingLecturer.id)
-        val retLecturer: Lecturer = lecturerRepository.save(updatedLecturer)
+        existingLecturer.firstName = lecturer.firstName
+        existingLecturer.lastName = lecturer.lastName
+
+        val retLecturer: Lecturer = lecturerRepository.save(existingLecturer)
         return conversion.convertLecturerToDTO(retLecturer)
     }
 
