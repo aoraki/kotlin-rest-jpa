@@ -17,6 +17,42 @@ repositories {
 	mavenCentral()
 }
 
+sourceSets {
+	create("integrationTest") {
+		compileClasspath += sourceSets.main.get().output
+		runtimeClasspath += sourceSets.main.get().output
+	}
+}
+
+val integrationTestImplementation by configurations.getting {
+	extendsFrom(configurations.testImplementation.get())
+}
+
+configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+
+val integrationTest = task<Test>("integrationTest") {
+	description = "Runs integration tests."
+	group = "verification"
+
+	testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+	classpath = sourceSets["integrationTest"].runtimeClasspath
+	shouldRunAfter("test")
+}
+
+tasks.check { dependsOn(integrationTest) }
+
+/*
+configurations {
+
+	create("integrationTestImplementation").apply {
+		extendsFrom(configurations.implementation.get())
+	}
+
+	create("integrationTestRuntimeOnly").apply {
+		extendsFrom(configurations.runtimeOnly.get())
+	}
+}*/
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -27,6 +63,7 @@ dependencies {
 
 	// DB Related dependencies
 	runtimeOnly("com.h2database:h2")
+	//runtimeOnly("org.postgresql:postgresql")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
 	// Logging
@@ -36,6 +73,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(module = "mockito-core")
 	}
+
 	testImplementation("io.mockk:mockk:1.10.2")
 	testImplementation("org.assertj:assertj-core:3.18.1")
 	testImplementation("com.ninja-squad:springmockk:3.1.0")
